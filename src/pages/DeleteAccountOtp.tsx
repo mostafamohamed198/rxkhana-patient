@@ -155,7 +155,7 @@ const DeleteAccountOtp = () => {
                     className="w-full"
                     disabled={isSubmitting}
                   >
-                    Login
+                    Delete Account
                   </Button>
                 </CardFooter>
               </Card>

@@ -55,7 +55,7 @@ const postSendOtp = async (phone_number: string): Promise<State> => {
       status: "error",
       message:
         axiosError.response?.data?.detail ||
-        "An error occurred during login. Please try again.",
+        "An error occurred during delete account. Please try again.",
     };
   }
 };
