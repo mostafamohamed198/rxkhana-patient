@@ -385,18 +385,9 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                           )}
                         </div>
                         <div>
-                          {label.type === "PHONE_NUMBERS" ? (
-                            <a
-                              href={`tel:${label.label}`}
-                              className="text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline transition-colors"
-                            >
-                              {label.label}
-                            </a>
-                          ) : (
-                            <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                          <p className="text-sm text-gray-700 leading-relaxed font-medium">
                               {label.label}
                             </p>
-                          )}
                         </div>
                       </div>
                     ))}

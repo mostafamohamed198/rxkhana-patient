@@ -40,7 +40,6 @@ export type PhoneNumber = {
 export type Facility = {
   id: number;
   name: string;
-  export type: string;
   address: string;
   phone_numbers: PhoneNumber[];
 };
@@ -59,7 +58,7 @@ export type LabTest = {
 
 export type Label = {
   label: string;
-  export type: string;
+  type: string;
   order: number;
 };
 
