@@ -266,7 +266,8 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
             </div>
             <Separator />
             {/* Diagnosis */}
-            <div className="space-y-4">
+            {prescription.diagnosis && (
+              <div className="space-y-4">
               <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
                 <Building className="h-5 w-5" />
                 {t.diagnosis}
@@ -277,6 +278,8 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                 </p>
               </div>
             </div>
+            )}
+            
             <Separator />
             {/* Medications */}
             <div className="space-y-4">
