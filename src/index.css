@@ -36,6 +36,30 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "Tajawal";
+  src: url("/fonts/tajawal/Tajawal-Light.ttf") format("truetype");
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: "Tajawal";
+  src: url("/fonts/tajawal/Tajawal-Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Tajawal";
+  src: url("/fonts/tajawal/Tajawal-Medium.ttf") format("truetype");
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Tajawal";
+  src: url("/fonts/tajawal/Tajawal-Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -145,6 +169,9 @@
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
+body {
+  font-family: "Tajawal";
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;

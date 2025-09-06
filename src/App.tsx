@@ -8,7 +8,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/prescriptions/:id" element={<Prescription />} />
+        <Route path="/prescriptions/:token" element={<Prescription />} />
         <Route path="/delete-account" element={<DeleteAccount />} />
         <Route
           path="/delete-account-otp/:phoneNumber"

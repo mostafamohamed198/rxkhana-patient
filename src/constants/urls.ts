@@ -6,3 +6,10 @@ export const getAuthUrl = () => {
     deleteAccount: () => `${BASE_URL}/api/v1/users/delete-account/`,
   };
 };
+
+export const getPrescriptionUrl = () => {
+  return {
+    getPrescription: () =>
+      `${BASE_URL}/api/v1/prescriptions/patient-prescription/`,
+  };
+};
