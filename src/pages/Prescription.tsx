@@ -115,35 +115,35 @@ const translations = {
   }
 };
 
-interface AppDownloadBannerProps {
-  language: string;
-}
+// interface AppDownloadBannerProps {
+//   language: string;
+// }
 
-const AppDownloadBanner: React.FC<AppDownloadBannerProps> = ({ language }) => {
-  const t = translations[language as keyof typeof translations] || translations.en;
+// const AppDownloadBanner: React.FC<AppDownloadBannerProps> = ({ language }) => {
+//   const t = translations[language as keyof typeof translations] || translations.en;
   
-  return (
-    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg mb-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Smartphone className="h-8 w-8" />
-          <div>
-            <h3 className="font-semibold text-lg">{t.downloadApp}</h3>
-            <p className="text-blue-100 text-sm">{t.downloadAppDesc}</p>
-          </div>
-        </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="bg-white text-blue-600 hover:bg-blue-50"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          {t.downloadApp}
-        </Button>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg mb-6">
+//       <div className="flex items-center justify-between">
+//         <div className="flex items-center gap-3">
+//           <Smartphone className="h-8 w-8" />
+//           <div>
+//             <h3 className="font-semibold text-lg">{t.downloadApp}</h3>
+//             <p className="text-blue-100 text-sm">{t.downloadAppDesc}</p>
+//           </div>
+//         </div>
+//         <Button
+//           variant="secondary"
+//           size="sm"
+//           className="bg-white text-blue-600 hover:bg-blue-50"
+//         >
+//           <Download className="h-4 w-4 mr-2" />
+//           {t.downloadApp}
+//         </Button>
+//       </div>
+//     </div>
+//   );
+// };
 
 interface PrescriptionViewProps {
   prescription: PrescriptionResponse;
@@ -158,7 +158,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
   return (
     <div className={`min-h-screen bg-gray-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="max-w-4xl mx-auto px-4">
-        <AppDownloadBanner language={prescription.language} />
+        {/* <AppDownloadBanner language={prescription.language} /> */}
         <Card className="shadow-lg p-0">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex items-center justify-between p-2 py-4">
@@ -399,7 +399,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
             </div>
           </CardFooter>
         </Card>
-        <div className="mt-8 text-center">
+        {/* <div className="mt-8 text-center">
           <Card className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0">
             <CardContent className="p-6">
               <Smartphone className="h-12 w-12 mx-auto mb-4" />
@@ -423,7 +423,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -476,7 +476,6 @@ const Prescription: React.FC = () => {
   return (
     <>
       <div className="relative min-h-screen">
-        {/* Background content that will be blurred */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-100">
           <div className="max-w-6xl mx-auto px-4 py-12">
             <div className="text-center mb-12">
@@ -486,7 +485,6 @@ const Prescription: React.FC = () => {
               <p className="text-xl text-gray-600 mb-8">
                 {t.secureAccess}
               </p>
-              {/* App Download CTA in background */}
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-xl max-w-2xl mx-auto mb-12">
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <Smartphone className="h-10 w-10" />
