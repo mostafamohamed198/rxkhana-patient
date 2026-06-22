@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import {
   Card,
   CardContent,
@@ -13,8 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Download,
-  Smartphone,
   Calendar,
   Stethoscope,
   Building,
@@ -26,159 +27,79 @@ import {
   MapPin,
   Phone,
 } from "lucide-react";
-import getPrescription,  { 
-  type State,
-  type PrescriptionResponse
+import getPrescription, {
+  type PrescriptionResponse,
 } from "@/actions/getPrescription";
+import verifyPrescriptionOtp from "@/actions/verifyPrescriptionOtp";
+import resolveShortLink from "@/actions/resolveShortLink";
+import postSendOtp from "@/actions/postSendOtp";
+import { getDeviceToken, setDeviceToken } from "@/lib/deviceToken";
 import { PhoneInput } from "@/components/ui/phone-input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { CardAction } from "@/components/ui/card";
-import logo from "@/assets/rx_black.svg";
+import { Logo } from "@/components/Logo";
+import { DownloadAppPromo } from "@/components/DownloadAppPromo";
 import { useParams } from "react-router";
+import { translations, type Language } from "@/locales";
 
-
-
-type FormData = {
+type PhoneFormData = {
   phoneNumber: string;
 };
 
-// Translation object
-const translations = {
-  ar: {
-    enterPhone: "أدخل رقم المحمول",
-    enterPhoneDesc: "أدخل رقم هاتفك لعرض الروشتة",
-    phoneNumber: "رقم المحمول",
-    viewPrescription: "عرض الروشتة",
-    loading: "جاري التحميل...",
-    backToVerification: "العودة للتحقق",
-    downloadApp: "تحميل التطبيق",
-    downloadAppDesc: "احصل على وصول فوري لروشتاتك في أي وقت ومكان",
-    medicalPrescription: "الروشتة الطبية",
-    issuedOn: "صدرت في",
-    facilityInfo: "معلومات المنشأة",
-    patientInfo: "معلومات المريض",
-    diagnosis: "التشخيص",
-    prescribedMeds: "الأدوية الموصوفة",
-    labTests: "التحاليل المطلوبة",
-    additionalNotes: "ملاحظات إضافية",
-    nextAppointment: "الزيارة القادمة",
-    name: "الاسم:",
-    age: "العمر:",
-    note: "ملاحظة:",
-    getMobileApp: "احصل على التطبيق",
-    getMobileAppDesc: "احصل على روشتاتك، واضبط تذكيرات الأدوية، وتواصل مع فريق الرعاية الصحية أثناء التنقل.",
-    appStore: "متجر التطبيقات",
-    googlePlay: "متجر جوجل",
-    prescriptionPortal: "بوابة الروشتات",
-    secureAccess: "وصول آمن للروشتات الطبية",
-    secureAccessTitle: "وصول آمن",
-    secureAccessDesc: "بيانات الروشتة محمية بأمان عالي المستوى",
-    access247: "وصول على مدار الساعة",
-    access247Desc: "اعرض روشتاتك في أي وقت ومن أي مكان",
-    mobileApp: "التطبيق المحمول",
-    mobileAppDesc: "احصل على تطبيقنا المحمول لأفضل تجربة",
-    betterExperience: "تجربة أفضل على الأجهزة المحمولة"
-  },
-  en: {
-    enterPhone: "Enter Mobile Number",
-    enterPhoneDesc: "Enter your phone number to view prescription",
-    phoneNumber: "Mobile Number",
-    viewPrescription: "View Prescription",
-    loading: "Loading...",
-    backToVerification: "Back to verification",
-    downloadApp: "Download Our Mobile App",
-    downloadAppDesc: "Get instant access to your prescriptions anytime, anywhere",
-    medicalPrescription: "Medical Prescription",
-    issuedOn: "Issued on",
-    facilityInfo: "Facility Information",
-    patientInfo: "Patient Information",
-    diagnosis: "Diagnosis",
-    prescribedMeds: "Prescribed Medications",
-    labTests: "Requested Lab Tests",
-    additionalNotes: "Additional Notes",
-    nextAppointment: "Next Appointment",
-    name: "Name:",
-    age: "Age:",
-    note: "Note:",
-    getMobileApp: "Get the Mobile App",
-    getMobileAppDesc: "Access your prescriptions, set medication reminders, and connect with your healthcare team on the go.",
-    appStore: "App Store",
-    googlePlay: "Google Play",
-    prescriptionPortal: "Prescription Portal",
-    secureAccess: "Secure access to your medical prescriptions",
-    secureAccessTitle: "Secure Access",
-    secureAccessDesc: "Your prescription data is protected with enterprise-grade security",
-    access247: "24/7 Access",
-    access247Desc: "View your prescriptions anytime, anywhere",
-    mobileApp: "Mobile App",
-    mobileAppDesc: "Get our mobile app for the best experience",
-    betterExperience: "Better experience on mobile devices"
-  }
-};
+type Step = "checking" | "phone" | "otp" | "viewing" | "error";
 
-// interface AppDownloadBannerProps {
-//   language: string;
-// }
+const phoneSchema = z.object({
+  phoneNumber: z
+    .string()
+    .min(11, "Phone number must be 11 digits")
+    .max(11, "Phone number must be 11 digits")
+    .regex(/^01[0-2,5]{1}[0-9]{8}$/, "Invalid Egyptian phone number"),
+});
 
-// const AppDownloadBanner: React.FC<AppDownloadBannerProps> = ({ language }) => {
-//   const t = translations[language as keyof typeof translations] || translations.en;
-  
-//   return (
-//     <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg mb-6">
-//       <div className="flex items-center justify-between">
-//         <div className="flex items-center gap-3">
-//           <Smartphone className="h-8 w-8" />
-//           <div>
-//             <h3 className="font-semibold text-lg">{t.downloadApp}</h3>
-//             <p className="text-blue-100 text-sm">{t.downloadAppDesc}</p>
-//           </div>
-//         </div>
-//         <Button
-//           variant="secondary"
-//           size="sm"
-//           className="bg-white text-blue-600 hover:bg-blue-50"
-//         >
-//           <Download className="h-4 w-4 mr-2" />
-//           {t.downloadApp}
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// };
+const otpSchema = z.object({
+  otp: z.string().min(6, { message: "OTP must be 6 digits" }),
+});
 
 interface PrescriptionViewProps {
   prescription: PrescriptionResponse;
 }
 
-const PrescriptionView: React.FC<PrescriptionViewProps> = ({ 
-  prescription, 
+const PrescriptionView: React.FC<PrescriptionViewProps> = ({
+  prescription,
 }) => {
-  const t = translations[prescription.language as keyof typeof translations] || translations.en;
-  const isRTL = prescription.language === 'ar';
+  const lang = (prescription.language as Language) in translations
+    ? (prescription.language as Language)
+    : "en";
+  const t = translations[lang].prescription;
+  const isRTL = lang === "ar";
   
   return (
-    <div className={`min-h-screen bg-gray-50 py-8 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-background py-8 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="max-w-4xl mx-auto px-4">
-        {/* <AppDownloadBanner language={prescription.language} /> */}
         <Card className="shadow-lg p-0">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-            <div className="flex items-center justify-between p-2 py-4">
+          <CardHeader className="bg-primary rounded-t-xl py-6">
+            <div className="flex items-center justify-between p-2">
               <div>
-                <CardTitle className="text-2xl text-gray-900">
+                <CardTitle className="text-2xl text-primary-foreground">
                   {t.medicalPrescription}
                 </CardTitle>
-                <CardDescription className="text-gray-600 mt-1">
+                <CardDescription className="text-primary-foreground/70 mt-1">
                   {t.issuedOn}{" "}
                   {new Date(prescription.created_at).toLocaleDateString()}
                 </CardDescription>
               </div>
-              <img src={logo} alt="Logo" />
+              <Logo />
             </div>
           </CardHeader>
           <CardContent className="space-y-8 p-8">
             <div className="grid gap-8">
               <div className="space-y-4">
               
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="bg-muted p-4 rounded-lg space-y-2">
                   {prescription.labels
                     .filter((label) => label.order < 5)
                     .sort((a, b) => a.order - b.order)
@@ -189,7 +110,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                             <div key={index} className="text-center mb-2">
                               <Badge
                                 variant="outline"
-                                className="bg-blue-100 text-blue-800 text-xs px-3 py-1 font-medium mb-3"
+                                className="bg-primary/10 text-primary text-xs px-3 py-1 font-medium mb-3"
                               >
                                 {label.label}
                               </Badge>
@@ -198,7 +119,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                         case 2:
                           return (
                             <div key={index} className="text-center mb-3">
-                              <h3 className="text-2xl font-bold text-gray-900 leading-tight">
+                              <h3 className="text-2xl font-bold text-foreground leading-tight">
                                 {label.label}
                               </h3>
                             </div>
@@ -207,8 +128,8 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                           return (
                             <div key={index} className="text-center mb-4">
                               <div className="flex items-center justify-center gap-2">
-                                <Stethoscope className="h-4 w-4 text-blue-600" />
-                                <p className="text-blue-700 font-semibold text-lg">
+                                <Stethoscope className="h-4 w-4 text-primary" />
+                                <p className="text-primary font-semibold text-lg">
                                   {label.label}
                                 </p>
                               </div>
@@ -218,8 +139,8 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                           return (
                             <div key={index} className="text-center mb-4">
                               <div className="flex items-center justify-center gap-2">
-                                <Pen className="h-5 w-5 text-gray-600" />
-                                <p className="text-gray-700 font-medium text-sm">
+                                <Pen className="h-5 w-5 text-muted-foreground" />
+                                <p className="text-foreground font-medium text-sm">
                                   {label.label}
                                 </p>
                               </div>
@@ -228,8 +149,8 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                         default:
                           return (
                             <div key={index} className="mb-2 last:mb-0">
-                              <div className="bg-gray-50 rounded-md p-3 border border-gray-200">
-                                <p className="text-sm text-gray-700">
+                              <div className="bg-muted rounded-md p-3 border border-border">
+                                <p className="text-sm text-foreground">
                                   {label.label}
                                 </p>
                               </div>
@@ -240,13 +161,13 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
                   <Stethoscope className="h-5 w-5" />
                   {t.patientInfo}
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="bg-muted p-4 rounded-lg space-y-2">
                   <p className="flex justify-between">
-                    <span className="font-medium text-gray-700">{t.name}</span>
+                    <span className="font-medium text-foreground">{t.name}</span>
                     <span>
                       {prescription.patient.first_name}{" "}
                       {prescription.patient.last_name}
@@ -254,7 +175,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                   </p>
                   {prescription.patient.age && (
                     <p className="flex justify-between">
-                      <span className="font-medium text-gray-700">{t.age}</span>
+                      <span className="font-medium text-foreground">{t.age}</span>
                       <span>
                         {prescription.patient.age}{" "}
                         {prescription.patient.age_unit.display}
@@ -268,7 +189,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
             {/* Diagnosis */}
             {prescription.diagnosis && (
               <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
                 <Building className="h-5 w-5" />
                 {t.diagnosis}
               </div>
@@ -283,7 +204,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
             <Separator />
             {/* Medications */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
                 <Pill className="h-5 w-5" />
                 {t.prescribedMeds}
               </div>
@@ -293,10 +214,10 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                     <CardContent>
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-semibold text-gray-900">
+                          <h4 className="font-semibold text-foreground">
                             {med.brand_dosage_display}
                           </h4>
-                          <p className="font-medium text-gray-600 text-sm">
+                          <p className="font-medium text-muted-foreground text-sm">
                             {med.medication_dosing}
                           </p>
                           {med.notes && (
@@ -317,7 +238,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
               <>
                 <Separator />
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                  <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
                     <FlaskConical className="h-5 w-5" />
                     {t.labTests}
                   </div>
@@ -341,7 +262,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
               <>
                 <Separator />
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                  <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
                     <StickyNote className="h-5 w-5" />
                     {t.additionalNotes}
                   </div>
@@ -355,7 +276,7 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
               <>
                 <Separator />
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                  <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
                     <Calendar className="h-5 w-5 " />
                     {t.nextAppointment}
                   </div>
@@ -371,10 +292,10 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
               </>
             )}
           </CardContent>
-          <CardFooter className="bg-gray-50 p-6 flex-col">
-            <div className="bg-white rounded-lg p-3 border border-blue-200 shadow-sm w-full">
+          <CardFooter className="bg-muted p-6 flex-col">
+            <div className="bg-card rounded-lg p-3 border border-primary/20 shadow-sm w-full">
               <div className="flex items-start gap-3">
-                <div className="w-full bg-blue-100 rounded-full flex flex-col items-center justify-center py-4 space-y-2">
+                <div className="w-full bg-primary/10 rounded-full flex flex-col items-center justify-center py-4 space-y-2">
                   {prescription.labels
                     .filter((label) => label.order > 4)
                     .sort((a, b) => a.order - b.order)
@@ -382,13 +303,13 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
                       <div key={index} className="flex">
                         <div>
                           {label.order === 5 ? (
-                            <MapPin className="w-4 h-4 text-blue-600 me-2" />
+                            <MapPin className="w-4 h-4 text-primary me-2" />
                           ) : (
-                            <Phone className="w-4 h-4 text-blue-600 me-2" />
+                            <Phone className="w-4 h-4 text-primary me-2" />
                           )}
                         </div>
                         <div>
-                          <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                          <p className="text-sm text-foreground leading-relaxed font-medium">
                               {label.label}
                             </p>
                         </div>
@@ -399,215 +320,287 @@ const PrescriptionView: React.FC<PrescriptionViewProps> = ({
             </div>
           </CardFooter>
         </Card>
-        {/* <div className="mt-8 text-center">
-          <Card className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0">
-            <CardContent className="p-6">
-              <Smartphone className="h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-xl font-bold mb-2">{t.getMobileApp}</h3>
-              <p className="mb-4 text-indigo-100">{t.getMobileAppDesc}</p>
-              <div className="flex gap-3 justify-center">
-                <Button
-                  variant="secondary"
-                  className="bg-white text-indigo-600 hover:bg-indigo-50"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  {t.appStore}
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="bg-white text-indigo-600 hover:bg-indigo-50"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  {t.googlePlay}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div> */}
       </div>
     </div>
   );
 };
 
+const RESEND_COOLDOWN_SECONDS = 120;
+
 const Prescription: React.FC = () => {
   const [prescription, setPrescription] = useState<PrescriptionResponse | null>(null);
+  const [step, setStep] = useState<Step>("checking");
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { token } = useParams<{ token: string }>();
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    defaultValues: {
-      phoneNumber: "",
-    },
+  const [showPromo, setShowPromo] = useState<boolean>(true);
+  const [verifiedPhone, setVerifiedPhone] = useState<string>("");
+  const [resendTimeLeft, setResendTimeLeft] = useState(RESEND_COOLDOWN_SECONDS);
+  const [isResending, setIsResending] = useState(false);
+  const { token: tokenParam, code } = useParams<{ token?: string; code?: string }>();
+  const [token, setToken] = useState<string | null>(tokenParam ?? null);
+
+  const phoneForm = useForm<PhoneFormData>({
+    resolver: zodResolver(phoneSchema),
   });
 
-  const onSubmit = async (data: FormData): Promise<void> => {
-    if (!token) return;
-    
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result: State = await getPrescription(data.phoneNumber, token);
+  const otpForm = useForm<{ otp: string }>({
+    resolver: zodResolver(otpSchema),
+  });
+
+  // Short links (/s/:code) resolve to a token internally — the address bar
+  // stays on the short URL instead of jumping to the long signed token.
+  useEffect(() => {
+    if (!code || token) return;
+
+    let cancelled = false;
+    resolveShortLink(code).then((result) => {
+      if (cancelled) return;
       if (result.status === "success") {
-        setPrescription(result.data);
+        setToken(result.token);
       } else {
         setError(result.message);
+        setStep("error");
       }
-    } catch (err) {
-      console.log(err)
-      setError("An unexpected error occurred. Please Check Your Phone number.");
-    } finally {
-      setIsLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [code, token]);
+
+  // Attempt silent access as soon as the promo screen is skipped: a browser
+  // that's already trusted (or is the first ever to open one of this
+  // patient's links) gets in with no phone number at all.
+  useEffect(() => {
+    if (showPromo || !token) return;
+
+    let cancelled = false;
+    setStep("checking");
+
+    getPrescription(token, getDeviceToken()).then((result) => {
+      if (cancelled) return;
+      if (result.status === "success") {
+        setDeviceToken(result.data.device_token);
+        setPrescription(result.data);
+        setStep("viewing");
+      } else if (result.status === "otp_required") {
+        setStep("phone");
+      } else {
+        setError(result.message);
+        setStep("error");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showPromo, token]);
+
+  useEffect(() => {
+    if (step !== "otp" || resendTimeLeft <= 0) return;
+    const timer = setTimeout(() => setResendTimeLeft((t) => t - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [step, resendTimeLeft]);
+
+  const currentLanguage = (prescription?.language as Language) || "ar";
+  const t = (translations[currentLanguage] ?? translations.en).prescription;
+  const isRTL = currentLanguage === "ar";
+
+  const onSubmitPhone = async (data: PhoneFormData): Promise<void> => {
+    const result = await postSendOtp(data.phoneNumber);
+    if (result.status === "success") {
+      setVerifiedPhone(data.phoneNumber);
+      setResendTimeLeft(RESEND_COOLDOWN_SECONDS);
+      otpForm.reset();
+      setStep("otp");
+    } else {
+      phoneForm.setError("phoneNumber", { message: result.message });
     }
   };
 
-  const currentLanguage = prescription?.language || 'ar';
-  const t = translations[currentLanguage as keyof typeof translations] || translations.en;
-  const isRTL = currentLanguage === 'ar';
+  const onSubmitOtp = async (data: { otp: string }): Promise<void> => {
+    if (!token) return;
+    const result = await verifyPrescriptionOtp(token, verifiedPhone, data.otp);
+    if (result.status === "success") {
+      setDeviceToken(result.data.device_token);
+      setPrescription(result.data);
+      setStep("viewing");
+    } else {
+      otpForm.setError("otp", { message: result.message });
+    }
+  };
 
-  if (prescription) {
+  const handleResendOtp = async () => {
+    if (resendTimeLeft > 0 || !verifiedPhone) return;
+    setIsResending(true);
+    try {
+      await postSendOtp(verifiedPhone);
+      setResendTimeLeft(RESEND_COOLDOWN_SECONDS);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  if (showPromo) {
+    return <DownloadAppPromo onSkip={() => setShowPromo(false)} />;
+  }
+
+  if (step === "viewing" && prescription) {
     return <PrescriptionView prescription={prescription} />;
   }
 
-  return (
-    <>
-      <div className="relative min-h-screen">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-100">
-          <div className="max-w-6xl mx-auto px-4 py-12">
-            <div className="text-center mb-12">
-              <h1 className="text-5xl font-bold text-gray-900 mb-4">
-                {t.prescriptionPortal}
-              </h1>
-              <p className="text-xl text-gray-600 mb-8">
-                {t.secureAccess}
-              </p>
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-xl max-w-2xl mx-auto mb-12">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <Smartphone className="h-10 w-10" />
-                  <div className="text-left">
-                    <h3 className="text-lg font-bold">
-                      {t.downloadApp}
-                    </h3>
-                    <p className="text-blue-100">
-                      {t.betterExperience}
+  if (step === "checking") {
+    return (
+      <div
+        dir={isRTL ? "rtl" : "ltr"}
+        className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4"
+      >
+        <Logo />
+        <p className="text-muted-foreground text-sm">{t.checkingAccess}</p>
+      </div>
+    );
+  }
+
+  if (step === "error") {
+    return (
+      <div
+        dir={isRTL ? "rtl" : "ltr"}
+        className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4 text-center"
+      >
+        <Logo />
+        <p className="text-destructive text-sm max-w-sm">{error}</p>
+      </div>
+    );
+  }
+
+  if (step === "otp") {
+    return (
+      <div
+        dir={isRTL ? "rtl" : "ltr"}
+        className="min-h-screen bg-background flex items-center justify-center px-4"
+      >
+        <div className="w-full max-w-md">
+          <form onSubmit={otpForm.handleSubmit(onSubmitOtp)}>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.enterOtp}</CardTitle>
+                <CardDescription>{t.enterOtpDesc}</CardDescription>
+                <CardAction>
+                  <Logo />
+                </CardAction>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-2 w-full">
+                  <Label htmlFor="otp">{t.enterOtp}</Label>
+                  {/* OTP digits always read left-to-right, even on the Arabic/RTL page */}
+                  <div dir="ltr">
+                    <InputOTP
+                      maxLength={6}
+                      pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                      onComplete={(value) => otpForm.setValue("otp", value)}
+                    >
+                      <InputOTPGroup className="w-full">
+                        {[0, 1, 2, 3, 4, 5].map((index) => (
+                          <InputOTPSlot key={index} index={index} className="w-1/6" />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+                  {otpForm.formState.errors.otp && (
+                    <p className="text-destructive text-sm">
+                      {otpForm.formState.errors.otp.message}
                     </p>
-                  </div>
+                  )}
                 </div>
-                <div className="flex gap-3 justify-center">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="bg-white text-blue-600"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    {t.appStore}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="bg-white text-blue-600"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    {t.googlePlay}
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{t.secureAccessTitle}</h3>
-                <p className="text-gray-600">{t.secureAccessDesc}</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-8 h-8 text-green-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{t.access247}</h3>
-                <p className="text-gray-600">{t.access247Desc}</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Smartphone className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{t.mobileApp}</h3>
-                <p className="text-gray-600">{t.mobileAppDesc}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Blur overlay */}
-        <div className="absolute inset-0 backdrop-blur-sm bg-black/30"></div>
-        <div
-          dir={isRTL ? 'rtl' : 'ltr'}
-          className="relative z-10 min-h-screen flex items-center justify-center px-4"
-        >
-          <div className="w-full max-w-md">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t.enterPhone}</CardTitle>
-                  <CardDescription>{t.enterPhoneDesc}</CardDescription>
-                  <CardAction>
-                    <img src={logo} className="w-8" alt="Logo" />
-                  </CardAction>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-6">
-                    <div className="grid gap-2">
-                      <Label htmlFor="phoneNumber">{t.phoneNumber}</Label>
-                      <PhoneInput
-                        id="phoneNumber"
-                        placeholder="01012345678"
-                        required
-                        {...register("phoneNumber")}
-                      />
-                      {errors.phoneNumber && (
-                        <p className="text-red-500 text-sm">
-                          {errors.phoneNumber.message}
-                        </p>
-                      )}
+              </CardContent>
+              <CardFooter className="flex-col gap-2">
+                <div className="w-full text-center">
+                  {resendTimeLeft > 0 ? (
+                    <div className="text-xs text-muted-foreground">
+                      {t.resendIn}{" "}
+                      <span className="font-mono font-semibold">
+                        {formatTime(resendTimeLeft)}
+                      </span>
                     </div>
-                    {error && (
-                      <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">
-                        {error}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col gap-4">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isSubmitting || isLoading}
-                  >
-                    {isSubmitting || isLoading ? t.loading : t.viewPrescription}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </form>
-          </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResendOtp}
+                      disabled={isResending}
+                      className="w-full"
+                    >
+                      {t.resendCode}
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={otpForm.formState.isSubmitting}
+                >
+                  {otpForm.formState.isSubmitting ? t.verifying : t.verify}
+                </Button>
+              </CardFooter>
+            </Card>
+          </form>
         </div>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div
+      dir={isRTL ? "rtl" : "ltr"}
+      className="min-h-screen bg-background flex items-center justify-center px-4"
+    >
+      <div className="w-full max-w-md">
+        <form onSubmit={phoneForm.handleSubmit(onSubmitPhone)}>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.enterPhone}</CardTitle>
+              <CardDescription>{t.enterPhoneDesc}</CardDescription>
+              <CardAction>
+                <Logo />
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="phoneNumber">{t.phoneNumber}</Label>
+                  <PhoneInput
+                    id="phoneNumber"
+                    placeholder="01012345678"
+                    required
+                    {...phoneForm.register("phoneNumber")}
+                  />
+                  {phoneForm.formState.errors.phoneNumber && (
+                    <p className="text-destructive text-sm">
+                      {phoneForm.formState.errors.phoneNumber.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={phoneForm.formState.isSubmitting}
+              >
+                {phoneForm.formState.isSubmitting ? t.sending : t.sendOtp}
+              </Button>
+            </CardFooter>
+          </Card>
+        </form>
+      </div>
+    </div>
   );
 };
 

@@ -1,0 +1,38 @@
+{
+  "prescription": {
+    "enterPhone": "أدخل رقم المحمول",
+    "enterPhoneDesc": "هذه الروشتة محمية، أدخل رقم هاتفك لتأكيد هويتك",
+    "phoneNumber": "رقم المحمول",
+    "sendOtp": "إرسال رمز التحقق",
+    "sending": "جاري الإرسال...",
+    "enterOtp": "أدخل رمز التحقق",
+    "enterOtpDesc": "تم إرسال رمز تحقق إلى رقم هاتفك",
+    "verify": "تحقق",
+    "verifying": "جاري التحقق...",
+    "resendCode": "إعادة إرسال الرمز",
+    "resendIn": "إعادة الإرسال خلال",
+    "checkingAccess": "جاري التحقق من الوصول...",
+    "viewPrescription": "عرض الروشتة",
+    "loading": "جاري التحميل...",
+    "backToVerification": "العودة للتحقق",
+    "medicalPrescription": "الروشتة الطبية",
+    "issuedOn": "صدرت في",
+    "facilityInfo": "معلومات المنشأة",
+    "patientInfo": "معلومات المريض",
+    "diagnosis": "التشخيص",
+    "prescribedMeds": "الأدوية الموصوفة",
+    "labTests": "التحاليل المطلوبة",
+    "additionalNotes": "ملاحظات إضافية",
+    "nextAppointment": "الزيارة القادمة",
+    "name": "الاسم:",
+    "age": "العمر:",
+    "note": "ملاحظة:"
+  },
+  "downloadAppPromo": {
+    "heading": "احصل على تطبيق RxKhana",
+    "description": "اعرض روشتاتك، واضبط تذكيرات الأدوية، وتواصل مع فريق الرعاية الصحية أثناء التنقل.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play",
+    "skip": "تخطي وعرض الروشتة"
+  }
+}

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/input-otp";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
-import logo from "@/assets/rx_black.svg";
+import { Logo } from "@/components/Logo";
 import { useEffect, useState } from "react";
 import deleteAccount from "@/actions/deleteAccount";
 import postSendOtp from "@/actions/postSendOtp";
@@ -88,7 +88,7 @@ const DeleteAccountOtp = () => {
     <div className="auth-layout">
       <div className="auth-container">
         <main className="auth-content">
-          <div className="flex min-h-svh flex-col items-center justify-center bg-gray-100">
+          <div className="flex min-h-svh flex-col items-center justify-center bg-background">
             <form onSubmit={handleSubmit(onSubmit)}>
               <Card className="w-full min-w-sm">
                 <CardHeader>
@@ -98,7 +98,7 @@ const DeleteAccountOtp = () => {
                     account
                   </CardDescription>
                   <CardAction>
-                    <img src={logo} />
+                    <Logo />
                   </CardAction>
                 </CardHeader>
                 <CardContent>
@@ -120,7 +120,7 @@ const DeleteAccountOtp = () => {
                         </InputOTPGroup>
                       </InputOTP>
                       {errors.otp && (
-                        <p className="text-red-500 text-sm">
+                        <p className="text-destructive text-sm">
                           {errors.otp.message}
                         </p>
                       )}
@@ -130,7 +130,7 @@ const DeleteAccountOtp = () => {
                 <CardFooter className="flex-col gap-2">
                   <div className="w-full text-center">
                     {!canResend ? (
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs text-muted-foreground">
                         Resend code in{" "}
                         <span className="font-mono font-semibold">
                           {formatTime(timeLeft)}

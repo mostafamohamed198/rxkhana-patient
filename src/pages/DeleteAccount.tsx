@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/rx_black.svg";
+import { Logo } from "@/components/Logo";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { AxiosError } from "axios";
 import postSendOtp from "@/actions/postSendOtp";
@@ -73,7 +73,7 @@ const DeleteAccount = () => {
     <div className="auth-layout">
       <div className="auth-container">
         <main className="auth-content">
-          <div className="flex min-h-svh flex-col items-center justify-center bg-gray-100">
+          <div className="flex min-h-svh flex-col items-center justify-center bg-background">
             <form onSubmit={handleSubmit(onSubmit)}>
               <Card>
                 <CardHeader>
@@ -82,7 +82,7 @@ const DeleteAccount = () => {
                     Enter your phone number to delete your account
                   </CardDescription>
                   <CardAction>
-                    <img src={logo} className="w-8" />
+                    <Logo />
                   </CardAction>
                 </CardHeader>
 
@@ -97,7 +97,7 @@ const DeleteAccount = () => {
                         {...register("phoneNumber")}
                       />
                       {errors.phoneNumber && (
-                        <p className="text-red-500 text-sm">
+                        <p className="text-destructive text-sm">
                           {errors.phoneNumber.message}
                         </p>
                       )}

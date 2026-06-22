@@ -9,6 +9,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/prescriptions/:token" element={<Prescription />} />
+        <Route path="/s/:code" element={<Prescription />} />
         <Route path="/delete-account" element={<DeleteAccount />} />
         <Route
           path="/delete-account-otp/:phoneNumber"

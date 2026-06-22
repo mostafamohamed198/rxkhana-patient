@@ -1,0 +1,38 @@
+{
+  "prescription": {
+    "enterPhone": "Enter Mobile Number",
+    "enterPhoneDesc": "This prescription is protected, enter your phone number to confirm it's you",
+    "phoneNumber": "Mobile Number",
+    "sendOtp": "Send Verification Code",
+    "sending": "Sending...",
+    "enterOtp": "Enter Verification Code",
+    "enterOtpDesc": "We sent a verification code to your phone number",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+    "resendCode": "Resend Code",
+    "resendIn": "Resend in",
+    "checkingAccess": "Checking access...",
+    "viewPrescription": "View Prescription",
+    "loading": "Loading...",
+    "backToVerification": "Back to verification",
+    "medicalPrescription": "Medical Prescription",
+    "issuedOn": "Issued on",
+    "facilityInfo": "Facility Information",
+    "patientInfo": "Patient Information",
+    "diagnosis": "Diagnosis",
+    "prescribedMeds": "Prescribed Medications",
+    "labTests": "Requested Lab Tests",
+    "additionalNotes": "Additional Notes",
+    "nextAppointment": "Next Appointment",
+    "name": "Name:",
+    "age": "Age:",
+    "note": "Note:"
+  },
+  "downloadAppPromo": {
+    "heading": "Get the RxKhana app",
+    "description": "View your prescriptions, set medication reminders, and reach your care team on the go.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play",
+    "skip": "Skip — view prescription"
+  }
+}
