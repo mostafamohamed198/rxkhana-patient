@@ -1,11 +1,14 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.rx.rxkhana",
       "sha256_cert_fingerprints": [
-        "FA:7D:1A:30:81:92:9D:41:6E:58:B3:20:39:05:96:75:A7:3B:EE:90:0B:50:E6:FB:EC:61:B7:47:04:F4:7B:E6"
+        "FA:7D:1A:30:81:92:9D:41:6E:58:B3:20:39:05:96:75:A7:3B:EE:90:0B:50:E6:FB:EC:61:B7:47:04:F4:7B:E6",
+        "29:22:51:AA:EE:E0:DF:B3:A4:88:49:43:8A:41:BB:F1:E2:28:7E:5F:3F:98:DC:F0:9C:25:E4:D8:FF:15:39:1C"
       ]
     }
   }
