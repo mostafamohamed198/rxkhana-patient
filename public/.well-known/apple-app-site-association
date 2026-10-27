@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["U2FN7AVL96.com.rx.rxkhana"],
+        "components": [
+          { "/": "/prescriptions/*" },
+          { "/": "/s/*" }
+        ]
+      }
+    ]
+  }
+}

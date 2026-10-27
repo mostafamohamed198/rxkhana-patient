@@ -111,13 +111,17 @@ export type PrescriptionResponse = {
   notes: string;
   labels: Label[];
   medications: Medication[];
-  language: string
+  language: string;
+  device_token: string;
 };
 
 export type State =
   | {
       status: "success";
       data: PrescriptionResponse;
+    }
+  | {
+      status: "otp_required";
     }
   | {
       status: "error";
@@ -136,23 +140,24 @@ export type ErrorResponse = {
   status?: string;
   code?: string;
   detail?: string;
+  error?: string;
   [key: string]: unknown;
 };
 
 type PrescriptionRequest = {
   token: string;
-  phone_number: string;
+  device_token?: string;
 };
 
 const getPrescription = async (
-  phoneNumber: string,
   token: string,
+  deviceToken?: string | null,
 ): Promise<State> => {
   try {
-    const requestBody: PrescriptionRequest = {
-      token,
-      phone_number: phoneNumber,
-    };
+    const requestBody: PrescriptionRequest = { token };
+    if (deviceToken) {
+      requestBody.device_token = deviceToken;
+    }
 
     const response: AxiosResponse<PrescriptionResponse> = await axios.post(
       getPrescriptionUrl().getPrescription(),
@@ -171,9 +176,16 @@ const getPrescription = async (
     };
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
+    if (
+      axiosError.response?.status === 401 &&
+      axiosError.response.data?.error === "otp_required"
+    ) {
+      return { status: "otp_required" };
+    }
     return {
       status: "error",
       message:
+        axiosError.response?.data?.error ||
         axiosError.response?.data?.detail ||
         "An error occurred while fetching the prescription. Please try again.",
     };

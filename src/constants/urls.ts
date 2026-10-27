@@ -11,5 +11,9 @@ export const getPrescriptionUrl = () => {
   return {
     getPrescription: () =>
       `${BASE_URL}/api/v1/prescriptions/patient-prescription/`,
+    verifyOtp: () =>
+      `${BASE_URL}/api/v1/prescriptions/patient-prescription/verify-otp/`,
+    resolveShortLink: (code: string) =>
+      `${BASE_URL}/api/v1/prescriptions/short-link/${code}/`,
   };
 };
