@@ -34,5 +34,11 @@
     "appStore": "App Store",
     "googlePlay": "Google Play",
     "skip": "Skip — view prescription"
+  },
+  "openApp": {
+    "heading": "Get the Rxkhana app",
+    "description": "Opening the store for your phone… If nothing happens, choose your store below.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play"
   }
 }

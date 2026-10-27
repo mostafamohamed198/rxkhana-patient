@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { Download, Smartphone } from "lucide-react";
 import { translations, type Language } from "@/locales";
+import { APP_STORE_URL, PLAY_STORE_URL } from "@/constants/stores";
 
 interface DownloadAppPromoProps {
   language?: Language;
@@ -14,12 +15,8 @@ export function DownloadAppPromo({
 }: DownloadAppPromoProps) {
   const t = translations[language].downloadAppPromo;
   const isRTL = language === "ar";
-  const playStoreUrl = import.meta.env.VITE_PLAY_STORE_URL as
-    | string
-    | undefined;
-  const appStoreUrl = import.meta.env.VITE_APP_STORE_URL as
-    | string
-    | undefined;
+  const playStoreUrl = PLAY_STORE_URL;
+  const appStoreUrl = APP_STORE_URL;
 
   return (
     <div

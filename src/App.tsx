@@ -3,6 +3,7 @@ import Prescription from "./pages/Prescription";
 import DeleteAccount from "./pages/DeleteAccount";
 import DeleteAccountSuccess from "./pages/DeleteAccountSuccess";
 import DeleteAccountOtp from "./pages/DeleteAccountOtp";
+import OpenApp from "./pages/OpenApp";
 
 function App() {
   return (
@@ -10,6 +11,8 @@ function App() {
       <Routes>
         <Route path="/prescriptions/:token" element={<Prescription />} />
         <Route path="/s/:code" element={<Prescription />} />
+        <Route path="/app" element={<OpenApp />} />
+        <Route path="/app/*" element={<OpenApp />} />
         <Route path="/delete-account" element={<DeleteAccount />} />
         <Route
           path="/delete-account-otp/:phoneNumber"

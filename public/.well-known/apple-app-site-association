@@ -2,8 +2,10 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["U2FN7AVL96.com.rx.rxkhana"],
+        "appIDs": ["5BBR28665W.com.rx.rxkhana", "U2FN7AVL96.com.rx.rxkhana"],
         "components": [
+          { "/": "/app" },
+          { "/": "/app/*" },
           { "/": "/prescriptions/*" },
           { "/": "/s/*" }
         ]

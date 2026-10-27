@@ -34,5 +34,11 @@
     "appStore": "App Store",
     "googlePlay": "Google Play",
     "skip": "تخطي وعرض الروشتة"
+  },
+  "openApp": {
+    "heading": "حمّل تطبيق Rxkhana",
+    "description": "جاري فتح المتجر المناسب لموبايلك… لو مفيش حاجة حصلت، اختار المتجر من هنا.",
+    "appStore": "App Store",
+    "googlePlay": "Google Play"
   }
 }
