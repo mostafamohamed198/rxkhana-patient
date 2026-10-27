@@ -25,7 +25,7 @@ import deleteAccount from "@/actions/deleteAccount";
 import postSendOtp from "@/actions/postSendOtp";
 
 const schema = z.object({
-  otp: z.string().min(6, { message: "OTP must be 6 digits" }),
+  otp: z.string().min(4, { message: "OTP must be 4 digits" }),
 });
 const DeleteAccountOtp = () => {
   const { phoneNumber } = useParams();
@@ -106,17 +106,15 @@ const DeleteAccountOtp = () => {
                     <div className="grid gap-2 w-full">
                       <Label htmlFor="otp">OTP</Label>
                       <InputOTP
-                        maxLength={6}
+                        maxLength={4}
                         pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
                         onComplete={(value) => setValue("otp", value)}
                       >
                         <InputOTPGroup className="w-full">
-                          <InputOTPSlot index={0} className="w-1/6" />
-                          <InputOTPSlot index={1} className="w-1/6" />
-                          <InputOTPSlot index={2} className="w-1/6" />
-                          <InputOTPSlot index={3} className="w-1/6" />
-                          <InputOTPSlot index={4} className="w-1/6" />
-                          <InputOTPSlot index={5} className="w-1/6" />
+                          <InputOTPSlot index={0} className="w-1/4" />
+                          <InputOTPSlot index={1} className="w-1/4" />
+                          <InputOTPSlot index={2} className="w-1/4" />
+                          <InputOTPSlot index={3} className="w-1/4" />
                         </InputOTPGroup>
                       </InputOTP>
                       {errors.otp && (
